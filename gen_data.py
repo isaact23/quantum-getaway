@@ -29,7 +29,7 @@ def main():
         os.remove(OUTPUT)
     with open(OUTPUT, newline='', mode='w') as f:
         writer = csv.writer(f)
-        writer.writerow(["Departure City", "Departure Time", "Arrival City", "Arrival Time", "Cost", "Airline"])
+        writer.writerow(["Departure City", "Arrival City", "Departure Time", "Arrival Time", "Cost", "Airline"])
 
         # Generate random entries for travel
         for i in range(ROWS):
@@ -54,7 +54,7 @@ def main():
 
             airline = random.randint(0, AIRLINES - 1)
 
-            writer.writerow([dep, dep_time, arr, arr_time, cost, airline])
+            writer.writerow([dep, arr, dep_time, arr_time, cost, airline])
 
 
 if __name__ == "__main__":
