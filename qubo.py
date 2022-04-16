@@ -2,13 +2,19 @@
 
 # Flight ID [100], Departure City [20], Arrival City [20], Departure Time [288], Arrival Time [288]
 
-from dwave.system.samplers import LeapHybridSampler
-from neal.sampler import SimulatedAnnealingSampler
+import csv, sys
 from cities import CITIES
+
+try:
+    from dwave.system.samplers import LeapHybridSampler
+    from neal.sampler import SimulatedAnnealingSampler
+except:
+    print("Failed to import DWave samplers")
+    sys.exit()
 
 CITY_COUNT = len(CITIES)
 TIME_QUBITS = 288
-NUM_FLIGHTS = 100  # TODO: Harvest this number from data.csv
+NUM_FLIGHTS = 100
 BLOCK_SIZE = ((CITY_COUNT * 2) + (TIME_QUBITS * 2) + NUM_FLIGHTS)
 
 
@@ -80,6 +86,61 @@ class Qubo:
                     self.qubo[(q1, q2)] += 2
 
         # Assert that departure city, departure time, arrival city and arrival time correspond to flight ID.
+        with open("data.csv", newline='', mode='r') as file:
+            reader = csv.reader(file)
+            for id, row in enumerate(reader):
+                # Skip the first row (header)
+                if id < 1:
+                    continue
+
+                # Apply constraint to each flight block
+                for f in range(self.flight_count):
+                    block = BLOCK_SIZE * f
+                    flight_id = id - 1
+                    departure_city = row[0]
+                    arrival_city = row[1]
+                    departure_time = row[2]
+                    arrival_time = row[3]
+
+                    q1 = block + flight_id
+
+                    for i in range(CITY_COUNT):
+                        # Enforce correct departure city
+                        q2 = block + NUM_FLIGHTS + i
+                        if i == departure_city:
+                            self.qubo[(q1, q1)] += 1
+                            self.qubo[(q1, q2)] += -1
+                        # Penalize wrong departure city
+                        else:
+                            self.qubo[(q1, q2)] += 1
+
+                        # Enforce correct arrival city
+                        q2 = block + NUM_FLIGHTS + CITY_COUNT + i
+                        if i == arrival_city:
+                            self.qubo[(q1, q1)] += 1
+                            self.qubo[(q1, q2)] += -1
+                        # Penalize wrong departure city
+                        else:
+                            self.qubo[(q1, q2)] += 1
+
+                    for i in range(TIME_QUBITS):
+                        # Enforce correct departure time
+                        q2 = block + NUM_FLIGHTS + (CITY_COUNT * 2) + i
+                        if i == departure_time:
+                            self.qubo[(q1, q1)] += 1
+                            self.qubo[(q1, q2)] += -1
+                        # Penalize wrong departure time
+                        else:
+                            self.qubo[(q1, q2)] += 1
+
+                        # Enforce correct arrival time
+                        q2 = block + NUM_FLIGHTS + (CITY_COUNT * 2) + TIME_QUBITS + i
+                        if i == arrival_time:
+                            self.qubo[(q1, q1)] += 1
+                            self.qubo[(q1, q2)] += -1
+                        # Penalize wrong arrival time
+                        else:
+                            self.qubo[(q1, q2)] += 1
 
         # Assert that first flight starts at departure city.
 
@@ -112,3 +173,5 @@ class Qubo:
                 print("Invalid result!")
             else:
                 print(flight_id)
+
+
