@@ -158,18 +158,20 @@ class Qubo:
         for datum in self.results.data(fields=['sample', 'energy']):
             print("Result:")
             print("Energy", datum.energy)
-            for i in range(BLOCK_SIZE):
-                if datum.sample[i] == 1:
-                    if i < NUM_FLIGHTS:
-                        print("Flight ID", i)
-                    elif i < NUM_FLIGHTS + CITY_COUNT:
-                        print("Departure city", i - NUM_FLIGHTS)
-                    elif i < NUM_FLIGHTS + (CITY_COUNT * 2):
-                        print("Arrival city", i - NUM_FLIGHTS - CITY_COUNT)
-                    elif i < NUM_FLIGHTS + (CITY_COUNT * 2) + TIME_QUBITS:
-                        print("Departure time", i - NUM_FLIGHTS - (CITY_COUNT * 2))
-                    else:
-                        print("Arrival time", i - NUM_FLIGHTS - (CITY_COUNT * 2) - TIME_QUBITS)
+            for flight in range(self.flight_count):
+                block = flight * BLOCK_SIZE
+                for i in range(BLOCK_SIZE):
+                    if datum.sample[i + block] == 1:
+                        if i < NUM_FLIGHTS:
+                            print("Flight ID", i)
+                        elif i < NUM_FLIGHTS + CITY_COUNT:
+                            print("Departure city", i - NUM_FLIGHTS)
+                        elif i < NUM_FLIGHTS + (CITY_COUNT * 2):
+                            print("Arrival city", i - NUM_FLIGHTS - CITY_COUNT)
+                        elif i < NUM_FLIGHTS + (CITY_COUNT * 2) + TIME_QUBITS:
+                            print("Departure time", i - NUM_FLIGHTS - (CITY_COUNT * 2))
+                        else:
+                            print("Arrival time", i - NUM_FLIGHTS - (CITY_COUNT * 2) - TIME_QUBITS)
 
     # Solve QUBO using either simulated or hybrid annealing
     def solve(self):
@@ -187,4 +189,4 @@ class Qubo:
         # token = input("Enter DWave token: ")
         # sampler = LeapHybridSampler(token=token)
         sampler = SimulatedAnnealingSampler()
-        self.results = sampler.sample_qubo(self.qubo, num_reads=10)
+        self.results = sampler.sample_qubo(self.qubo, num_reads=1)

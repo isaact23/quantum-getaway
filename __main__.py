@@ -8,7 +8,7 @@ ARRIVAL = 1
 
 
 def main():
-    qubo = Qubo(1, 0, 1)
+    qubo = Qubo(3, 0, 1)
     qubo.solve()
     qubo.analyze_results()
 
