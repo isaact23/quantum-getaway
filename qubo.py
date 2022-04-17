@@ -146,12 +146,38 @@ class Qubo:
                             #self.qubo[(q1, q2)] += 1
 
         # Assert that first flight starts at departure city.
+        for i in range(CITY_COUNT):
+            q = NUM_FLIGHTS + i
+            if i == self.departure_city:
+                self.qubo[(q, q)] -= 1
+            else:
+                self.qubo[(q, q)] += 1
 
         # Assert that last flight ends at arrival city.
+        for i in range(CITY_COUNT):
+            q = (BLOCK_SIZE * (self.flight_count - 1)) + NUM_FLIGHTS + CITY_COUNT + i
+            if i == self.arrival_city:
+                self.qubo[(q, q)] -= 1
+            else:
+                self.qubo[(q, q)] += 1
+
 
         # Assert that each flight departs from the previous flight's arrival.
+        for f in range(self.flight_count - 1):
+            for i in range(CITY_COUNT):
+                q1 = (BLOCK_SIZE * f) + NUM_FLIGHTS + CITY_COUNT + i
+                q2 = (BLOCK_SIZE * (f + 1)) + NUM_FLIGHTS + i
+                self.qubo[(q1, q1)] += 1
+                self.qubo[(q2, q2)] += 1
+                self.qubo[(q1, q2)] -= 2
 
         # Assert that each flight departs after the previous flight's arrival.
+        for f in range(self.flight_count - 1):
+            for i in range(TIME_QUBITS):
+                for j in range(i):
+                    q1 = (BLOCK_SIZE * f) + NUM_FLIGHTS + (CITY_COUNT * 2) + TIME_QUBITS + i
+                    q2 = (BLOCK_SIZE * (f + 1)) + NUM_FLIGHTS + (CITY_COUNT * 2) + j
+                    self.qubo[(q1, q2)] += 1
 
     # Analyze and print results
     def analyze_results(self):
@@ -186,7 +212,10 @@ class Qubo:
             for j in range(i, self.size):
                 self.qubo[(i, j)] /= max"""
 
-        # token = input("Enter DWave token: ")
-        # sampler = LeapHybridSampler(token=token)
-        sampler = SimulatedAnnealingSampler()
-        self.results = sampler.sample_qubo(self.qubo, num_reads=1)
+        token = input("Enter DWave token: ")
+        sampler = LeapHybridSampler(token=token)
+        # sampler = SimulatedAnnealingSampler()
+        self.results = sampler.sample_qubo(self.qubo)
+
+# 6, 4, 55
+# 6, 4, 30
