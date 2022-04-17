@@ -2,7 +2,9 @@
 
 # Flight ID [100], Departure City [20], Arrival City [20], Departure Time [288], Arrival Time [288]
 
-import csv, sys
+import csv
+import sys
+
 from cities import CITIES
 
 try:
@@ -216,6 +218,3 @@ class Qubo:
         sampler = LeapHybridSampler(token=token)
         # sampler = SimulatedAnnealingSampler()
         self.results = sampler.sample_qubo(self.qubo)
-
-# 6, 4, 55
-# 6, 4, 30
