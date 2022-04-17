@@ -5,6 +5,8 @@
 import csv
 import sys
 
+from dwave.cloud.exceptions import SolverNotFoundError
+
 from cities import CITIES
 
 try:
@@ -185,6 +187,8 @@ class Qubo:
     # Analyze and return valid results
     def analyze_results(self):
         results = []
+        if self.results is None:
+            return None
         for datum in self.results.data(fields=['sample', 'energy']):
             valid = True
             result = {}
@@ -249,5 +253,8 @@ class Qubo:
                 print("Using quantum annealing.")
                 sampler = LeapHybridSampler(token=token)
                 self.results = sampler.sample_qubo(self.qubo)
+        except SolverNotFoundError:
+            print("Error: Solver not found.")
+            self.results = None
         except:
-            return None
+            self.results = None

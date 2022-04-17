@@ -1,5 +1,13 @@
 
+body {
+    font-family: sans-serif;
+    margin: 50px;
+}
+
 .result {
-    border: solid 1px;
+    border: solid 2px;
+    border-radius: 15px;
+
+    padding: 20px;
     margin-top: 25px;
 }
