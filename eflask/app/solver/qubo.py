@@ -19,8 +19,10 @@ TIME_QUBITS = 288
 NUM_FLIGHTS = 100
 BLOCK_SIZE = (CITY_COUNT * 2) + (TIME_QUBITS * 2) + NUM_FLIGHTS
 
+
 class Qubo:
-    def __init__(self, flight_count, departure_city, arrival_city):
+    def __init__(self, flight_count, departure_city, arrival_city, app):
+        self.app = app
         self.flight_count = flight_count
         self.departure_city = departure_city
         self.arrival_city = arrival_city
@@ -87,7 +89,7 @@ class Qubo:
                     self.qubo[(q1, q2)] += 2
 
         # Assert that departure city, departure time, arrival city and arrival time correspond to flight ID.
-        with open("data.csv", newline='', mode='r') as file:
+        with self.app.open_resource("data.csv", mode='r') as file:
             reader = csv.reader(file)
             for id, row in enumerate(reader):  # TODO: Comply with NUM_FLIGHTS
                 # Skip the first row (header)
@@ -114,7 +116,7 @@ class Qubo:
                         # Penalize wrong departure city
                         else:
                             pass
-                            #self.qubo[(q1, q2)] += 1
+                            # self.qubo[(q1, q2)] += 1
 
                         # Enforce correct arrival city
                         q2 = block + NUM_FLIGHTS + CITY_COUNT + i
@@ -124,7 +126,7 @@ class Qubo:
                         # Penalize wrong departure city
                         else:
                             pass
-                            #self.qubo[(q1, q2)] += 1
+                            # self.qubo[(q1, q2)] += 1
 
                     for i in range(TIME_QUBITS):
                         # Enforce correct departure time
@@ -135,7 +137,7 @@ class Qubo:
                         # Penalize wrong departure time
                         else:
                             pass
-                            #self.qubo[(q1, q2)] += 1
+                            # self.qubo[(q1, q2)] += 1
 
                         # Enforce correct arrival time
                         q2 = block + NUM_FLIGHTS + (CITY_COUNT * 2) + TIME_QUBITS + i
@@ -145,7 +147,7 @@ class Qubo:
                         # Penalize wrong arrival time
                         else:
                             pass
-                            #self.qubo[(q1, q2)] += 1
+                            # self.qubo[(q1, q2)] += 1
 
         # Assert that first flight starts at departure city.
         for i in range(CITY_COUNT):
@@ -162,7 +164,6 @@ class Qubo:
                 self.qubo[(q, q)] -= 1
             else:
                 self.qubo[(q, q)] += 1
-
 
         # Assert that each flight departs from the previous flight's arrival.
         for f in range(self.flight_count - 1):
@@ -181,40 +182,72 @@ class Qubo:
                     q2 = (BLOCK_SIZE * (f + 1)) + NUM_FLIGHTS + (CITY_COUNT * 2) + j
                     self.qubo[(q1, q2)] += 1
 
-    # Analyze and print results
+    # Analyze and return valid results
     def analyze_results(self):
+        results = []
         for datum in self.results.data(fields=['sample', 'energy']):
-            print("Result:")
-            print("Energy", datum.energy)
+            valid = True
+            result = {}
             for flight in range(self.flight_count):
+                result[flight] = {"id": None, "departure_city": None, "arrival_city": None, "departure_time": None,
+                                  "arrival_time": None}
+                if not valid:
+                    break
                 block = flight * BLOCK_SIZE
                 for i in range(BLOCK_SIZE):
+                    if not valid:
+                        break
                     if datum.sample[i + block] == 1:
                         if i < NUM_FLIGHTS:
-                            print("Flight ID", i)
+                            if result[flight]["id"] is None:
+                                result[flight]["id"] = i
+                            else:
+                                valid = False
+                                break
                         elif i < NUM_FLIGHTS + CITY_COUNT:
-                            print("Departure city", i - NUM_FLIGHTS)
+                            if result[flight]["departure_city"] is None:
+                                result[flight]["departure_city"] = i - NUM_FLIGHTS
+                            else:
+                                valid = False
+                                break
                         elif i < NUM_FLIGHTS + (CITY_COUNT * 2):
-                            print("Arrival city", i - NUM_FLIGHTS - CITY_COUNT)
+                            if result[flight]["arrival_city"] is None:
+                                result[flight]["arrival_city"] = i - NUM_FLIGHTS - CITY_COUNT
+                            else:
+                                valid = False
+                                break
                         elif i < NUM_FLIGHTS + (CITY_COUNT * 2) + TIME_QUBITS:
-                            print("Departure time", i - NUM_FLIGHTS - (CITY_COUNT * 2))
+                            if result[flight]["departure_time"] is None:
+                                result[flight]["departure_time"] = i - NUM_FLIGHTS - (CITY_COUNT * 2)
+                            else:
+                                valid = False
+                                break
                         else:
-                            print("Arrival time", i - NUM_FLIGHTS - (CITY_COUNT * 2) - TIME_QUBITS)
+                            if result[flight]["arrival_time"] is None:
+                                result[flight]["arrival_time"] = i - NUM_FLIGHTS - (CITY_COUNT * 2) - TIME_QUBITS
+                            else:
+                                valid = False
+                                break
+                # Ensure all fields are filled
+                for field in result:
+                    if result[field] is None:
+                        valid = False
+                        break
+            if valid:
+                results.append(result)
+
+        return results
 
     # Solve QUBO using either simulated or hybrid annealing
-    def solve(self):
-        # Normalize QUBO
-        """max = 0
-        for i in range(self.size):
-            for j in range(i, self.size):
-                val = self.qubo[(i, j)]
-                if val > max:
-                    max = val
-        for i in range(self.size):
-            for j in range(i, self.size):
-                self.qubo[(i, j)] /= max"""
-
-        token = input("Enter DWave token: ")
-        sampler = LeapHybridSampler(token=token)
-        # sampler = SimulatedAnnealingSampler()
-        self.results = sampler.sample_qubo(self.qubo)
+    def solve(self, token=None):
+        try:
+            if token is None or len(token) < 1:
+                print("Using simulated annealing.")
+                sampler = SimulatedAnnealingSampler()
+                self.results = sampler.sample_qubo(self.qubo, num_reads=10)
+            else:
+                print("Using quantum annealing.")
+                sampler = LeapHybridSampler(token=token)
+                self.results = sampler.sample_qubo(self.qubo)
+        except:
+            return None

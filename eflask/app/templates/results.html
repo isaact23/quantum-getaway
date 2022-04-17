@@ -1,2 +1,12 @@
+
 <h1>Quantum Getaway</h1>
-<p>Please wait while results are determined</p>
+
+{% for result in results %}
+<div class="result" style="border: solid 1px black;">
+    {% for flight in result %}
+    <div class="flight">
+        <p>Flight ID: {{flight.id}}, Dep</p>
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
