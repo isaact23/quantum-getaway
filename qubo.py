@@ -15,8 +15,7 @@ except:
 CITY_COUNT = len(CITIES)
 TIME_QUBITS = 288
 NUM_FLIGHTS = 100
-BLOCK_SIZE = ((CITY_COUNT * 2) + (TIME_QUBITS * 2) + NUM_FLIGHTS)
-
+BLOCK_SIZE = (CITY_COUNT * 2) + (TIME_QUBITS * 2) + NUM_FLIGHTS
 
 class Qubo:
     def __init__(self, flight_count, departure_city, arrival_city):
@@ -44,10 +43,10 @@ class Qubo:
             block = BLOCK_SIZE * f
             for i in range(NUM_FLIGHTS):
                 q1 = block + i
-                self.qubo[(q1, q1)] += -1
+                self.qubo[(q1, q1)] += -4
                 for j in range(i + 1, NUM_FLIGHTS):
                     q2 = block + j
-                    self.qubo[(q1, q2)] += 2
+                    self.qubo[(q1, q2)] += 8
 
             # Departure city
             block += NUM_FLIGHTS
@@ -64,7 +63,7 @@ class Qubo:
                 q1 = block + i
                 self.qubo[(q1, q1)] += -1
                 for j in range(i + 1, CITY_COUNT):
-                    q2 = block + i
+                    q2 = block + j
                     self.qubo[(q1, q2)] += 2
 
             # Departure time
@@ -73,7 +72,7 @@ class Qubo:
                 q1 = block + i
                 self.qubo[(q1, q1)] += -1
                 for j in range(i + 1, TIME_QUBITS):
-                    q2 = block + i
+                    q2 = block + j
                     self.qubo[(q1, q2)] += 2
 
             # Arrival time
@@ -82,13 +81,13 @@ class Qubo:
                 q1 = block + i
                 self.qubo[(q1, q1)] += -1
                 for j in range(i + 1, TIME_QUBITS):
-                    q2 = block + i
+                    q2 = block + j
                     self.qubo[(q1, q2)] += 2
 
         # Assert that departure city, departure time, arrival city and arrival time correspond to flight ID.
         with open("data.csv", newline='', mode='r') as file:
             reader = csv.reader(file)
-            for id, row in enumerate(reader):
+            for id, row in enumerate(reader):  # TODO: Comply with NUM_FLIGHTS
                 # Skip the first row (header)
                 if id < 1:
                     continue
@@ -97,10 +96,10 @@ class Qubo:
                 for f in range(self.flight_count):
                     block = BLOCK_SIZE * f
                     flight_id = id - 1
-                    departure_city = row[0]
-                    arrival_city = row[1]
-                    departure_time = row[2]
-                    arrival_time = row[3]
+                    departure_city = int(row[0])
+                    arrival_city = int(row[1])
+                    departure_time = int(row[2])
+                    arrival_time = int(row[3])
 
                     q1 = block + flight_id
 
@@ -112,7 +111,8 @@ class Qubo:
                             self.qubo[(q1, q2)] += -1
                         # Penalize wrong departure city
                         else:
-                            self.qubo[(q1, q2)] += 1
+                            pass
+                            #self.qubo[(q1, q2)] += 1
 
                         # Enforce correct arrival city
                         q2 = block + NUM_FLIGHTS + CITY_COUNT + i
@@ -121,7 +121,8 @@ class Qubo:
                             self.qubo[(q1, q2)] += -1
                         # Penalize wrong departure city
                         else:
-                            self.qubo[(q1, q2)] += 1
+                            pass
+                            #self.qubo[(q1, q2)] += 1
 
                     for i in range(TIME_QUBITS):
                         # Enforce correct departure time
@@ -131,7 +132,8 @@ class Qubo:
                             self.qubo[(q1, q2)] += -1
                         # Penalize wrong departure time
                         else:
-                            self.qubo[(q1, q2)] += 1
+                            pass
+                            #self.qubo[(q1, q2)] += 1
 
                         # Enforce correct arrival time
                         q2 = block + NUM_FLIGHTS + (CITY_COUNT * 2) + TIME_QUBITS + i
@@ -140,7 +142,8 @@ class Qubo:
                             self.qubo[(q1, q2)] += -1
                         # Penalize wrong arrival time
                         else:
-                            self.qubo[(q1, q2)] += 1
+                            pass
+                            #self.qubo[(q1, q2)] += 1
 
         # Assert that first flight starts at departure city.
 
@@ -150,28 +153,38 @@ class Qubo:
 
         # Assert that each flight departs after the previous flight's arrival.
 
+    # Analyze and print results
+    def analyze_results(self):
+        for datum in self.results.data(fields=['sample', 'energy']):
+            print("Result:")
+            print("Energy", datum.energy)
+            for i in range(BLOCK_SIZE):
+                if datum.sample[i] == 1:
+                    if i < NUM_FLIGHTS:
+                        print("Flight ID", i)
+                    elif i < NUM_FLIGHTS + CITY_COUNT:
+                        print("Departure city", i - NUM_FLIGHTS)
+                    elif i < NUM_FLIGHTS + (CITY_COUNT * 2):
+                        print("Arrival city", i - NUM_FLIGHTS - CITY_COUNT)
+                    elif i < NUM_FLIGHTS + (CITY_COUNT * 2) + TIME_QUBITS:
+                        print("Departure time", i - NUM_FLIGHTS - (CITY_COUNT * 2))
+                    else:
+                        print("Arrival time", i - NUM_FLIGHTS - (CITY_COUNT * 2) - TIME_QUBITS)
+
     # Solve QUBO using either simulated or hybrid annealing
     def solve(self):
-        token = input("Enter DWave token: ")
+        # Normalize QUBO
+        """max = 0
+        for i in range(self.size):
+            for j in range(i, self.size):
+                val = self.qubo[(i, j)]
+                if val > max:
+                    max = val
+        for i in range(self.size):
+            for j in range(i, self.size):
+                self.qubo[(i, j)] /= max"""
+
+        # token = input("Enter DWave token: ")
         # sampler = LeapHybridSampler(token=token)
         sampler = SimulatedAnnealingSampler()
         self.results = sampler.sample_qubo(self.qubo, num_reads=10)
-
-    # Analyze and print results
-    def analyze_results(self):
-        for result in self.results:
-            # Get flight ID
-            flight_id = -1
-            for i in range(NUM_FLIGHTS):
-                if result[i] == 1:
-                    if flight_id == -1:
-                        flight_id = i
-                    else:
-                        print("Invalid result!")
-                        break
-            if flight_id == -1:
-                print("Invalid result!")
-            else:
-                print(flight_id)
-
-

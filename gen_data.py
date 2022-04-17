@@ -7,6 +7,9 @@ ROWS = 100
 AIRLINES = 4
 LAST_DEPARTURE = 216  # 6 pm
 
+MIN_DIST = 5
+MAX_DIST = 20
+
 OUTPUT = "data.csv"
 
 
@@ -37,7 +40,7 @@ def main():
             arr = 1
             # Flights cannot span too far of a distance.
             dist = 0
-            while dep == arr or dist < 5 or dist > 20:
+            while dep == arr or dist < MIN_DIST or dist > MAX_DIST:
                 dep = rand_city()
                 arr = rand_city()
                 dist = get_dist(dep, arr)
