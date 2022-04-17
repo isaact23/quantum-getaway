@@ -2,10 +2,16 @@
 <h1>Quantum Getaway</h1>
 
 {% for result in results %}
-<div class="result" style="border: solid 1px black;">
+<div class="result" style="border: solid 1px black; margin-top: 20px;">
     {% for flight in result %}
     <div class="flight">
-        <p>Flight ID: {{flight.id}}, Dep</p>
+        <p>
+            Flight ID: {{result[flight]['id']}},
+            Starting Airport: {{result[flight]['departure_city']}},
+            Departure Time: {{result[flight]['departure_time']}},
+            Ending Airport: {{result[flight]['arrival_city']}},
+            Arrival Time: {{result[flight]['arrival_time']}}
+        </p>
     </div>
     {% endfor %}
 </div>
