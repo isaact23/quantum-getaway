@@ -6,8 +6,56 @@
 <body>
     <h1>Quantum Getaway</h1>
     <form action="/results" method="POST">
-        <p>Leaving from <input type="text" name="Origin"/>
-        <p>Going to <input type="text" name="Destination"/>
+        <p>
+            Leaving from
+            <select name="Origin">
+                <option value="0">New York, NY</option>
+                <option value="1">Los Angeles, CA</option>
+                <option value="2">Chicago, IL</option>
+                <option value="3">Houston, TX</option>
+                <option value="4">Phoenix, AZ</option>
+                <option value="5">Philadelphia, PA</option>
+                <option value="6">San Antonio, TX</option>
+                <option value="7">San Diego, CA</option>
+                <option value="8">Dallas, TX</option>
+                <option value="9">San Jose, CA</option>
+                <option value="10">Austin, TX</option>
+                <option value="11">Jacksonville, FL</option>
+                <option value="12">Fort Worth, TX</option>
+                <option value="13">Columbus, OH</option>
+                <option value="14">Indianapolis, IN</option>
+                <option value="15">Charlotte, NC</option>
+                <option value="16">San Francisco, CA</option>
+                <option value="17">Seattle, WA</option>
+                <option value="18">Denver, CO</option>
+                <option value="19">Washington D.C.</option>
+            </select>
+        </p>
+        <p>
+            Going to
+            <select name="Destination">
+                <option value="0">New York, NY</option>
+                <option value="1">Los Angeles, CA</option>
+                <option value="2">Chicago, IL</option>
+                <option value="3">Houston, TX</option>
+                <option value="4">Phoenix, AZ</option>
+                <option value="5">Philadelphia, PA</option>
+                <option value="6">San Antonio, TX</option>
+                <option value="7">San Diego, CA</option>
+                <option value="8">Dallas, TX</option>
+                <option value="9">San Jose, CA</option>
+                <option value="10">Austin, TX</option>
+                <option value="11">Jacksonville, FL</option>
+                <option value="12">Fort Worth, TX</option>
+                <option value="13">Columbus, OH</option>
+                <option value="14">Indianapolis, IN</option>
+                <option value="15">Charlotte, NC</option>
+                <option value="16">San Francisco, CA</option>
+                <option value="17">Seattle, WA</option>
+                <option value="18">Denver, CO</option>
+                <option value="19">Washington D.C.</option>
+            </select>
+        </p>
         <p>DWave API Key (Leave blank for simulated annealing) <input type="text" name="Key"</p>
         <p><input type="submit" value="Submit"/>
     </form>
