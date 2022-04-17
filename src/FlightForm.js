@@ -34,7 +34,7 @@ export default class FlightForm extends React.Component {
         }
         // Submit button press
         else if (menu === 3) {
-
+            this.props.history.push("/results");
         }
     }
 

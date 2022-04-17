@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import {
     Button,
     Container,
@@ -11,6 +12,7 @@ import {
     SplitButton
 } from "react-bootstrap"
 import FlightForm from "./FlightForm";
+import Results from "./Results";
 
 export default class App extends React.Component {
     constructor(props) {
@@ -25,7 +27,14 @@ export default class App extends React.Component {
                         <Navbar.Brand>Quantum Getaway</Navbar.Brand>
                     </Container>
                 </Navbar>
-                <FlightForm/>
+                <BrowserRouter>
+                    <Routes>
+                        <Route path="/">
+                            <Route index element={<FlightForm/>}/>
+                            <Route path="results" element={<Results/>}/>
+                        </Route>
+                    </Routes>
+                </BrowserRouter>
             </div>
         );
     }
