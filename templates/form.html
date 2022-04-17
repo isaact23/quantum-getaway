@@ -1,0 +1,15 @@
+<html>
+<head>
+    <title>Quantum Getaway</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <h1>Quantum Getaway</h1>
+    <form action="/results" method="POST">
+        <p>Leaving from <input type="text" name="Origin"/>
+        <p>Going to <input type="text" name="Destination"/>
+        <p>DWave API Key (Leave blank for simulated annealing) <input type="text" name="Key"</p>
+        <p><input type="submit" value="Submit"/>
+    </form>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<html>
+<head>
+    <title>Quantum Getaway</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <h1>Quantum Getaway</h1>
+
+    {% for result in results %}
+    <div class="result">
+        {% for flight in result %}
+        <div class="flight">
+            <p>
+                Flight ID: {{result[flight]['id']}},
+                Starting Airport: {{result[flight]['departure_city']}},
+                Departure Time: {{result[flight]['departure_time']}},
+                Ending Airport: {{result[flight]['arrival_city']}},
+                Arrival Time: {{result[flight]['arrival_time']}}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</body>
+</html>
